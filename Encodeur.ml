@@ -10,6 +10,18 @@ let read_file_tab chanel =
 		|Some x -> aux (x :: acc)
 	in List.rev (aux [])
 	
+let read_first_line chanel =
+	let chan = open_in chanel
+	in let line = input_line chan 
+	in let _ = close_in chan
+	in line
+	
+(* Fonctions d'ecriture de fichier *)
+let write_txt chanel str =
+	let chan = open_out chanel
+	in let _ = output_string chan str
+	in close_out chan
+	
 (* Concatenation de caractères et chaines*)
 let chars_to_string chars= 
 	let rec aux acc = function
@@ -39,9 +51,7 @@ let find_pair  hash caractere =
 		Not_found -> ""
 
 (* Debut *)
-let contenu_tab = 
-	let temp = read_file_tab (open_in "Cle36.txt")
-	in List.nth temp 0
+let contenu_tab = read_first_line "Cle36.txt"
 let dico = 
 	let dicov = Hashtbl.create 36
 	in let paires = make_pairs "ADFGVX"
@@ -51,3 +61,4 @@ let phrase =
 	let input = read_file_tab (open_in "Input.txt")
 	in String.concat "" input
 let conversion = string_super_map  (function x -> find_pair dico x) phrase
+let _ = write_txt "Output.txt" conversion
