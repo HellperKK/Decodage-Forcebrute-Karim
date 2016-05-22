@@ -22,7 +22,7 @@ let write_txt chanel str =
 	in let _ = output_string chan str
 	in close_out chan
 	
-(* Concatenation de caractères et chaines*)
+(* Manipulation de caractères et chaines*)
 let chars_to_string chars= 
 	let rec aux acc = function
 		|[] -> acc
@@ -35,6 +35,37 @@ let string_super_map f str =
 		|x -> aux (acc ^ (f str.[x])) (x + 1)
 	in aux "" 0
 	
+let string_to_char_list str =
+	let rec aux acc = function
+		|"" -> acc
+		|ch -> aux (ch.[0] :: acc) (String.sub ch 1 ((String.length ch)-1))
+	in List.rev (aux [] str)
+	
+(* Manipulation de tableaux*)
+let rec repeat valeur fois =
+	let rec aux acc = function
+		|0 -> acc
+		|x -> aux (valeur :: acc) (x - 1)
+	in aux [] fois
+    
+let slice_list liste a b =
+	let rec aux acc i = 
+		if i > b then acc
+		else aux ((List.nth liste i) :: acc) (i + 1)
+	in List.rev (aux [] a)
+	
+let split_list liste taille escape =
+	let rec aux acc = function
+		|[] -> acc
+		|x when List.length x < taille -> (x @ (repeat escape (taille - List.length x))) :: acc
+		|x -> aux ((slice_list x 0 (taille - 1)) :: acc) (slice_list x taille (List.length x - 1))
+	in List.rev (aux [] liste)
+
+let rows_to_columns tab = 
+	let rec aux acc = function
+		|x when List.flatten x = [] -> acc
+		|x -> aux ((List.map (function y -> List.nth y 0) x) :: acc) (List.map (function y -> slice_list y 1 (List.length y - 1)) x)
+	in List.rev (aux [] tab)
 	
 (* Mise en place du premier encodeur *)
 let make_pairs str =
@@ -44,21 +75,26 @@ let make_pairs str =
 		|(x, y) -> aux ((chars_to_string [str.[x]; str.[y]]) :: acc) x (y + 1)
 	in List.rev (aux [] 0 0)
 	
-let find_pair  hash caractere = 
+let find_pair hash caractere = 
 	try
 		Hashtbl.find hash caractere
 	with
 		Not_found -> ""
 
 (* Debut *)
-let contenu_tab = read_first_line "Cle36.txt"
+let cle_un = read_first_line "Cle36.txt"
 let dico = 
 	let dicov = Hashtbl.create 36
 	in let paires = make_pairs "ADFGVX"
-	in let _ = String.iteri (fun key value -> Hashtbl.add dicov value (List.nth paires key)) contenu_tab
+	in let _ = String.iteri (fun key value -> Hashtbl.add dicov value (List.nth paires key)) cle_un
 	in dicov
 let phrase =
 	let input = read_file_tab (open_in "Input.txt")
 	in String.concat "" input
-let conversion = string_super_map  (function x -> find_pair dico x) phrase
-let _ = write_txt "Output.txt" conversion
+let conversion_un = string_super_map  (function x -> find_pair dico x) phrase
+let cle_deux = read_first_line "CleT.txt"
+let tableau_un = 
+	let tab = string_to_char_list conversion_un
+	in split_list tab (String.length cle_deux) 'X'
+let tableau_deux = rows_to_columns tableau_un
+(* let _ = write_txt "Output.txt" conversion *)
