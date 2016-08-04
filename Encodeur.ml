@@ -67,6 +67,20 @@ let rows_to_columns tab =
 		|x -> aux ((List.map (function y -> List.nth y 0) x) :: acc) (List.map (function y -> slice_list y 1 (List.length y - 1)) x)
 	in List.rev (aux [] tab)
 	
+let count_l liste item =
+	let rec aux count = function
+	|[] -> count
+	|x :: ls when x = item -> aux (count + 1) ls
+	|_ :: ls -> aux count ls
+	in aux 0 liste
+	
+let elements_order liste =
+	let rec aux acc = function
+	|[] -> acc
+	|x :: ls -> let temp = (count_l liste x) - (count_l ls x) - 1
+		in aux (temp :: acc) ls
+	in List.rev (aux [] liste)
+	
 (* Mise en place du premier encodeur *)
 let make_pairs str =
 	let rec aux acc pointeur pointeurbis = match (pointeur, pointeurbis) with
@@ -97,4 +111,8 @@ let tableau_un =
 	let tab = string_to_char_list conversion_un
 	in split_list tab (String.length cle_deux) 'X'
 let tableau_deux = rows_to_columns tableau_un
+let cle_deuxb = string_to_char_list cle_deux
+let tableau_final = 
+	let aux = elements_order cle_deuxb
+	in List.map (function x -> List.nth tableau_deux x) aux
 (* let _ = write_txt "Output.txt" conversion *)
